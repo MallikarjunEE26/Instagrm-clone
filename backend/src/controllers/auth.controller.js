@@ -60,11 +60,15 @@ export async function signup(req, res) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    res.status(201).json({
-      message: "User created successfully",
-      token,
-      user: newUser,
-    });
+
+const userWithoutPassword = newUser.toObject();
+delete userWithoutPassword.password;
+
+res.status(201).json({
+  message: "User created successfully",
+  token,
+  user: userWithoutPassword,
+});
     console.log("SIGNUP BODY =>", req.body);
     console.log("JWT_SECRET =>", process.env.JWT_SECRET_KEY);
   } catch (error) {
@@ -105,11 +109,13 @@ export async function login(req, res) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-
+    
+const userWithoutPassword = user.toObject();
+delete userWithoutPassword.password;
     res.status(201).json({
       message: "User is Loged In successfully",
       token,
-      user: user,
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.log("Error in Signup Controller:", error);

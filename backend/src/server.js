@@ -7,8 +7,10 @@ import cors from "cors";
 import { connectToDB } from "./database/db.js";
 import cookieParser from "cookie-parser";
 import path from "path";
+import postRoutes from "./routes/post.routes.js";
 
 dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 
@@ -24,9 +26,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/posts", postRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

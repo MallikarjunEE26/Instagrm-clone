@@ -41,13 +41,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    friends: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    followers: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
+],
+following: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+],
+},
   { timestamps: true }
 );
 

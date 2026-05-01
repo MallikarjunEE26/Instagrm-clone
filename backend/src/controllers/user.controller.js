@@ -171,3 +171,89 @@ export async function outgoingFriendRequest(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// FOLLOW / UNFOLLOW USER
+export const toggleFollow = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user._id;
+
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ message: "You can't follow yourself" });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser || !currentUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isFollowing = currentUser.following.includes(targetUserId);
+
+    if (isFollowing) {
+      // unfollow
+      currentUser.following = currentUser.following.filter(
+        (id) => id.toString() !== targetUserId
+      );
+      targetUser.followers = targetUser.followers.filter(
+        (id) => id.toString() !== currentUserId.toString()
+      );
+    } else {
+      // follow
+      currentUser.following.push(targetUserId);
+      targetUser.followers.push(currentUserId);
+    }
+
+    await currentUser.save();
+    await targetUser.save();
+
+    res.status(200).json({
+      message: isFollowing ? "Unfollowed" : "Followed",
+    });
+  } catch (error) {
+    console.log("Follow error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET USER PROFILE
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("followers", "fullName profilePic")
+      .populate("following", "fullName profilePic");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    console.log("Error fetching profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET SUGGESTED USERS TO FOLLOW
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUser = req.user;
+
+    const users = await User.find({
+      _id: { $ne: currentUser._id, $nin: currentUser.following },
+    })
+      .select("-password")
+      .limit(5);
+
+    res.status(200).json({ users });
+  } catch (error) {
+    console.log("Error fetching suggested users:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
