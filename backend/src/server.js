@@ -19,7 +19,10 @@ const __dirname = path.resolve();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://instagram-clone-frontend.onrender.com"
+    ],
     credentials: true,
   })
 );
